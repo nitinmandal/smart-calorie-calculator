@@ -1,1 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Calories Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<style>
+
+/* ==============================
+   GLOBAL STYLES
+============================== */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #eaeaea;
+}
+
+/* ==============================
+   CARD CONTAINER
+============================== */
+
+.calculator {
+    position: relative;
+    background: #1e293b;
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    font-weight: bold;
+    color: #cbd5f5;
+}
+
+input, select {
+    width: 100%;
+    padding: 11px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    background: #334155;
+    color: #f8fafc;
+}
+
+input::placeholder {
+    color: #94a3b8;
+}
+
+/* ==============================
+   BUTTONS
+============================== */
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #6366f1;
+    color: white;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+.reset-btn {
+    background: #475569;
+}
+
+.reset-btn:hover {
+    background: #334155;
+}
+
+/* Theme Toggle Button */
+
+.theme-toggle {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ==============================
+   RESULT SECTION
+============================== */
+
+.result {
+    margin-top: 22px;
+    padding: 18px;
+    background: #020617;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.7;
+
+    /* animation */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.4s ease;
+}
+
+.result.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.highlight {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.loss { color: #f87171; }
+.maintain { color: #60a5fa; }
+.bulk { color: #4ade80; }
+
+.error {
+    color: #f87171;
+    font-weight: bold;
+}
+
+small {
+    color: #94a3b8;
+}
+
+/* ==============================
+   LIGHT THEME
+============================== */
+
+.light body {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    color: #0f172a;
+}
+
+.light .calculator {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.light label,
+.light h1,
+.light strong {
+    color: #0f172a;
+}
+
+.light input,
+.light select {
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+}
+
+.light .result {
+    background: #e0e7ff;
+    color: #0f172a;
+}
+
+.light button {
+    background: #2563eb;
+}
+
+.light button:hover {
+    background: #1d4ed8;
+}
+
+.light .theme-toggle {
+    background: #2563eb;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <h1>Calories Calculator</h1>
+
+    <!-- INPUTS -->
+    <label>Age</label>
+    <input type="number" id="age" placeholder="e.g. 21">
+
+    <label>Weight (kg)</label>
+    <input type="number" id="weight" placeholder="e.g. 70">
+
+    <label>Height (cm)</label>
+    <input type="number" id="height" placeholder="e.g. 175">
+
+    <label>Gender</label>
+    <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select>
+
+    <label>Activity Level</label>
+    <select id="activity">
+        <option value="1.2">Sedentary</option>
+        <option value="1.375">Light</option>
+        <option value="1.55">Moderate</option>
+        <option value="1.725">Active</option>
+    </select>
+
+    <label>Goal</label>
+    <select id="goal">
+        <option value="maintain">Maintain</option>
+        <option value="loss">Fat Loss</option>
+        <option value="bulk">Muscle Gain</option>
+    </select>
+
+    <label>Goal Speed</label>
+    <select id="speed">
+        <option value="0">Normal</option>
+        <option value="-300">Slow Fat Loss</option>
+        <option value="-500">Medium Fat Loss</option>
+        <option value="-700">Aggressive Fat Loss</option>
+        <option value="300">Lean Bulk</option>
+        <option value="500">Fast Bulk</option>
+    </select>
+
+    <button onclick="calculateCalories()">Calculate</button>
+    <button class="reset-btn" onclick="resetForm()">Reset</button>
+
+    <div class="result" id="result">
+        Enter details and calculate
+    </div>
+
+</div>
+
+<script>
+
+/* ==============================
+   CALCULATION FUNCTION
+============================== */
+
+function calculateCalories() {
+
+    const age = Number(document.getElementById("age").value);
+    const weight = Number(document.getElementById("weight").value);
+    const height = Number(document.getElementById("height").value);
+    const gender = document.getElementById("gender").value;
+    const activity = Number(document.getElementById("activity").value);
+    const speed = Number(document.getElementById("speed").value);
+    const goal = document.getElementById("goal").value;
+
+    const result = document.getElementById("result");
+
+    // Validation
+    if (!age || !weight || !height) {
+        result.innerHTML = "<span class='error'>Please fill all required fields.</span>";
+        return;
+    }
+
+    // BMR Calculation (Mifflin–St Jeor Formula)
+    const bmr = (gender === "male")
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
+
+    // Total Daily Energy Expenditure
+    const tdee = bmr * activity;
+
+    // Final Calorie Target
+    const calories = Math.round(tdee + speed);
+
+    // Macronutrients
+    const protein = Math.round(weight * (goal === "loss" ? 2.2 : 1.8));
+    const fat = Math.round((calories * 0.25) / 9);
+    const carbs = Math.round((calories - (protein * 4 + fat * 9)) / 4);
+
+    const goalClass =
+        goal === "loss" ? "loss" :
+        goal === "bulk" ? "bulk" :
+        "maintain";
+
+    // Display result
+    result.innerHTML = `
+        <div class="highlight ${goalClass}">
+            ${calories} kcal / day
+        </div>
+
+        <strong>BMR:</strong> ${Math.round(bmr)} kcal<br>
+        <strong>TDEE:</strong> ${Math.round(tdee)} kcal<br><br>
+
+        <strong>Protein:</strong> ${protein} g<br>
+        <strong>Fat:</strong> ${fat} g<br>
+        <strong>Carbs:</strong> ${carbs} g<br><br>
+
+        <small>This calculator provides estimates and is not medical advice.</small>
+    `;
+
+    // Trigger animation
+    result.classList.remove("show");
+    setTimeout(() => result.classList.add("show"), 50);
+}
+
+/* ==============================
+   RESET FUNCTION
+============================== */
+
+function resetForm() {
+    document.querySelectorAll("input").forEach(input => input.value = "");
+    document.getElementById("result").innerText = "Enter details and calculate";
+}
+
+/* ==============================
+   THEME TOGGLE
+============================== */
+
+function toggleTheme() {
+    document.documentElement.classList.toggle("light");
+}
+
+</script>
+
+</body>
+</html>
